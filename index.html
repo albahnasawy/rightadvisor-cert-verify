@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>التحقق من الشهادات - Right Advisor</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- html5-qrcode (مكتبة مسح QR بالكاميرا) -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.9/minified/html5-qrcode.min.js"></script>
+</head>
+<body>
+  <main class="container">
+    <header class="header">
+      <img src="https://res.cloudinary.com/dvqik0oco/image/upload/v1753625098/logo2-02_black_emfhdj.png" alt="Right Advisor" class="logo">
+      <h1>نظام التحقق من شهادات التدريب</h1>
+      <p class="subtitle">أدخل رقم الشهادة أو امسح QR للتحقق من صحة الشهادة الصادرة من Right Advisor</p>
+    </header>
+
+    <section class="search-panel">
+      <div class="input-row">
+        <input id="certInput" type="text" placeholder="أدخل رقم الشهادة (مثال: RA-2025-001)" />
+        <button id="searchBtn">تحقق</button>
+      </div>
+
+      <div class="qr-row">
+        <button id="toggleScanBtn">ابدأ مسح QR</button>
+        <button id="stopScanBtn" style="display:none">أوقف المسح</button>
+      </div>
+
+      <div id="qr-reader" style="display:none; margin-top:12px;"></div>
+    </section>
+
+    <section id="result" class="result" aria-live="polite" style="display:none"></section>
+
+    <footer class="footer">
+      <small>Right Advisor © <span id="year"></span> — للتواصل: rightadvisor.eg@gmail.com</small>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
