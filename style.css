@@ -9,7 +9,7 @@ body {
     margin: 0;
     padding: 20px;
     box-sizing: border-box;
-    direction: rtl; /* لاتجاه النص العربي */
+    direction: ltl; /* لاتجاه النص العربي */
 }
 .container {
     background-color: #fff;
