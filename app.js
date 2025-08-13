@@ -1,4 +1,4 @@
-// JavaScript لمعالجة منطق الصفحة
+// JavaScript
 document.addEventListener('DOMContentLoaded', () => {
     const serialNumberInput = document.getElementById('serialNumberInput');
     const verifyButton = document.getElementById('verifyButton');
