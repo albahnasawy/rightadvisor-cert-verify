@@ -1,121 +1,132 @@
-// JavaScript
 document.addEventListener('DOMContentLoaded', () => {
-    const serialNumberInput = document.getElementById('serialNumberInput');
+    const verificationCodeInput = document.getElementById('verificationCode');
     const verifyButton = document.getElementById('verifyButton');
-    const toggleQrScanButton = document.getElementById('toggleQrScanButton');
-    const readerDiv = document.getElementById('reader');
-    const qrResultDiv = document.getElementById('qr-result');
-    const certificateDetailsDiv = document.getElementById('certificateDetails');
+    const scanQrButton = document.getElementById('scanQrButton');
+    const certificateDetails = document.getElementById('certificateDetails');
+    const qrReader = document.getElementById('qr-reader');
+    const githubPagesBaseUrl = "https://albahnasawy.github.io/rightadvisor-cert-verify/"; // Your GitHub Pages URL
 
-    let certificatesData = [];
-    let html5QrCode = null;
+    let certificates = [];
 
-    // دالة لعرض الرسائل في صندوق مخصص
-    function displayMessage(message, type) {
-        certificateDetailsDiv.innerHTML = `<div class="message-box ${type}-message">${message}</div>`;
-    }
-
-    // جلب بيانات الشهادات من ملف certificates.json
-    fetch('/certificates.json')
-        .then(response => {
+    // Function to load certificates data
+    async function loadCertificates() {
+        try {
+            const response = await fetch('certificates.json');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            return response.json();
-        })
-        .then(data => {
-            certificatesData = data;
-            console.log('Certificates loaded successfully.');
-        })
-        .catch(error => {
-            console.error('Error fetching certificates:', error);
-            displayMessage('حدث خطأ أثناء تحميل بيانات الشهادات. يرجى التأكد من وجود الملف.', 'error');
-        });
+            certificates = await response.json();
+            console.log('Certificates loaded:', certificates);
+        } catch (error) {
+            console.error('Error loading certificates:', error);
+            certificateDetails.innerHTML = '<p class="error-message">حدث خطأ أثناء تحميل بيانات الشهادات. يرجى المحاولة لاحقًا.</p>';
+        }
+    }
 
-    // دالة لعرض تفاصيل الشهادة
+    // Function to display certificate details
     function displayCertificate(certificate) {
-        certificateDetailsDiv.innerHTML = `
-            <div class="certificate-info">
-                <p><strong>اسم المتدرب:</strong> ${certificate.traineeName}</p>
-                <p><strong>الموضوع:</strong> ${certificate.topic}</p>
-                <p><strong>تاريخ الإصدار:</strong> ${certificate.issueDate}</p>
-                <p><strong>الجهة المانحة:</strong> Right Advisor</p>
-                <p><strong>رقم الشهادة:</strong> ${certificate.serialNumber}</p>
-            </div>
-        `;
-    }
-
-    // دالة البحث عن الشهادة برقمها
-    function searchCertificate(serialNumber) {
-        const foundCertificate = certificatesData.find(cert => cert.serialNumber === serialNumber);
-        if (foundCertificate) {
-            displayCertificate(foundCertificate);
-            return true;
+        if (certificate) {
+            certificateDetails.innerHTML = `
+                <p><strong>رمز التحقق:</strong> ${certificate['Verification Code']}</p>
+                <p><strong>اسم المتدرب:</strong> ${certificate['Trainee Name']}</p>
+                <p><strong>اسم الدورة:</strong> ${certificate['Course Name']}</p>
+                <p><strong>موضوع الدورة:</strong> ${certificate['Course Topic']}</p>
+                <p><strong>تاريخ الإصدار:</strong> ${certificate['Issue Date']}</p>
+                <p><strong>رمز الشركة:</strong> ${certificate['Company Code']}</p>
+                <p><strong>رمز الدورة:</strong> ${certificate['Course Code']}</p>
+                <p><strong>الشهر/السنة:</strong> ${certificate['Month/Year']}</p>
+                <p><strong>الموجة:</strong> ${certificate['Wave']}</p>
+                <p><strong>هوية المتدرب:</strong> ${certificate['Trainee ID']}</p>
+            `;
         } else {
-            displayMessage('عذرًا، لم يتم العثور على شهادة بهذا الرقم. يرجى التأكد من الرقم والمحاولة مرة أخرى.', 'error');
-            return false;
+            certificateDetails.innerHTML = '<p class="error-message">لم يتم العثور على شهادة بهذا الرمز.</p>';
         }
     }
 
-    // معالج حدث للبحث اليدوي
+    // Manual verification by code
     verifyButton.addEventListener('click', () => {
-        const serialNumber = serialNumberInput.value.trim();
-        if (serialNumber) {
-            searchCertificate(serialNumber);
+        const code = verificationCodeInput.value.trim();
+        if (code) {
+            const foundCertificate = certificates.find(cert => cert['Verification Code'] === code);
+            displayCertificate(foundCertificate);
         } else {
-            displayMessage('الرجاء إدخال رقم الشهادة للبحث.', 'info');
+            certificateDetails.innerHTML = '<p class="error-message">الرجاء إدخال رمز التحقق.</p>';
         }
     });
 
-    // معالج حدث لمسح الـ QR Code
-    toggleQrScanButton.addEventListener('click', () => {
-        if (html5QrCode && html5QrCode.isScanning) {
-            // إيقاف الماسح إذا كان يعمل
-            html5QrCode.stop().then(() => {
-                console.log("QR Code scanning stopped.");
-                readerDiv.style.display = 'none';
-                qrResultDiv.style.display = 'none';
-                toggleQrScanButton.textContent = 'بدء مسح QR Code';
-                displayMessage('تم إيقاف الماسح الضوئي.', 'info');
+    // QR Code Scanning
+    let html5QrCode;
+
+    scanQrButton.addEventListener('click', () => {
+        if (!html5QrCode) {
+            html5QrCode = new Html5Qrcode("qr-reader");
+        }
+
+        if (html5QrCode.is=>Scanning) {
+            html5QrCode.stop().then(ignore => {
+                scanQrButton.textContent = 'مسح QR Code بالكاميرا';
+                certificateDetails.innerHTML = '<p>أدخل رمز التحقق أو امسح QR Code لعرض تفاصيل الشهادة.</p>';
             }).catch(err => {
-                console.error("Error stopping QR Code scanner:", err);
+                console.error("Failed to stop QR scanner:", err);
             });
-        } else {
-            // بدء الماسح
-            readerDiv.style.display = 'block';
-            qrResultDiv.style.display = 'block';
-            toggleQrScanButton.textContent = 'إيقاف المسح';
-            qrResultDiv.textContent = 'جارٍ تشغيل الكاميرا...';
-            
-            if (!html5QrCode) {
-                html5QrCode = new Html5Qrcode("reader");
-            }
-
-            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
-            
-            html5QrCode.start({ facingMode: "environment" }, config,
-                (decodedText, decodedResult) => {
-                    // عند المسح بنجاح
-                    qrResultDiv.textContent = `تم مسح: ${decodedText}`;
-                    searchCertificate(decodedText);
-                    // إيقاف الماسح بعد نجاح العملية
-                    if (html5QrCode.isScanning) {
-                        html5QrCode.stop().then(() => {
-                            readerDiv.style.display = 'none';
-                            toggleQrScanButton.textContent = 'بدء مسح QR Code';
-                        }).catch(err => console.error("Error stopping scanner after scan:", err));
-                    }
-                },
-                (errorMessage) => {
-                    // noop - this is called continuously when no QR is found
-                }
-            ).catch((err) => {
-                console.error(`Unable to start scanning: ${err}`);
-                displayMessage('لا يمكن تشغيل الكاميرا. تأكد من إعطاء إذن الوصول للكاميرا أو أنها ليست قيد الاستخدام.', 'error');
-                readerDiv.style.display = 'none';
-                toggleQrScanButton.textContent = 'بدء مسح QR Code';
-                qrResultDiv.style.display = 'none';
-            });
+            return;
         }
+
+        // Start scanning
+        html5QrCode.start(
+            { facingMode: "environment" }, // Prefer rear camera
+            {
+                fps: 10,    // frames per second
+                qrbox: { width: 250, height: 250 }  // Area of scanning
+            },
+            (decodedText, decodedResult) => {
+                // Handle success
+                console.log(`QR Code detected: ${decodedText}`);
+                let codeFromQr = decodedText;
+
+                // If QR code is a URL, extract the 'code' parameter
+                if (decodedText.startsWith(githubPagesBaseUrl)) {
+                    try {
+                        const url = new URL(decodedText);
+                        codeFromQr = url.searchParams.get('code');
+                    } catch (e) {
+                        console.error("Invalid QR code URL:", e);
+                    }
+                }
+
+                if (codeFromQr) {
+                    const foundCertificate = certificates.find(cert => cert['Verification Code'] === codeFromQr);
+                    displayCertificate(foundCertificate);
+                    html5QrCode.stop(); // Stop scanning after finding
+                    scanQrButton.textContent = 'مسح QR Code بالكاميرا';
+                } else {
+                    certificateDetails.innerHTML = '<p class="error-message">رمز QR غير صالح أو مفقود.</p>';
+                }
+            },
+            (errorMessage) => {
+                // Handle error (e.g., no QR code found in video stream)
+                // console.warn(`QR Code no longer in view, error: ${errorMessage}`);
+            }
+        ).then(() => {
+            scanQrButton.textContent = 'إيقاف المسح';
+        }).catch((err) => {
+            console.error(`Unable to start scanning: ${err}`);
+            certificateDetails.innerHTML = `<p class="error-message">تعذر بدء الكاميرا: ${err.message}. يرجى التأكد من السماح بالوصول إلى الكاميرا.</p>`;
+        });
     });
+
+    // Load certificates when the page loads
+    loadCertificates();
+
+    // Handle direct URL access with a verification code (e.g., from QR code link)
+    const urlParams = new URLSearchParams(window.location.search);
+    const codeFromUrl = urlParams.get('code');
+    if (codeFromUrl) {
+        // Wait for certificates to load before searching
+        loadCertificates().then(() => {
+            const foundCertificate = certificates.find(cert => cert['Verification Code'] === codeFromUrl);
+            displayCertificate(foundCertificate);
+            verificationCodeInput.value = codeFromUrl; // Pre-fill the input
+        });
+    }
 });
