@@ -1,4 +1,3 @@
-/* CSS لتنسيق الصفحة - تم تضمينه لسهولة الاستخدام */
 body {
     font-family: 'Arial', sans-serif;
     background-color: #f0f2f5;
@@ -9,7 +8,7 @@ body {
     margin: 0;
     padding: 20px;
     box-sizing: border-box;
-    direction: ltl; /* لاتجاه النص العربي */
+    direction: rtl; /* لاتجاه النص العربي */
 }
 .container {
     background-color: #fff;
