@@ -1,45 +1,317 @@
-<!doctype html>
-<html lang="ar" dir="rtl">
+<!DOCTYPE html>
+<html lang="ar">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>التحقق من الشهادات - Right Advisor</title>
-
-  <!-- Styles -->
-  <link rel="stylesheet" href="style.css">
-
-  <!-- html5-qrcode (مكتبة مسح QR بالكاميرا) -->
-  <script src="https://unpkg.com/html5-qrcode@2.3.9/minified/html5-qrcode.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التحقق من شهادة التدريب - Right Advisor</title>
+    <!-- تضمين مكتبة html5-qrcode لمسح الباركود -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+        /* CSS لتنسيق الصفحة - تم تضمينه لسهولة الاستخدام */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            direction: rtl; /* لاتجاه النص العربي */
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        .header {
+            margin-bottom: 25px;
+        }
+        .logo {
+            max-width: 180px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        h1 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            margin-bottom: 5px;
+        }
+        h2 {
+            color: #34495e;
+            font-size: 1.6em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        .section-box {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #f9fbfd;
+            transition: all 0.3s ease;
+        }
+        .section-box:hover {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        input[type="text"] {
+            width: calc(100% - 140px); /* Adjust width to make room for button */
+            padding: 14px;
+            margin-left: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 6px;
+            font-size: 1.1em;
+            direction: rtl;
+            text-align: right;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        input[type="text"]:focus {
+            border-color: #3498db;
+        }
+        button {
+            padding: 14px 25px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        #reader {
+            width: 100%;
+            max-width: 400px;
+            margin: 20px auto;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            display: none; /* مخفي بشكل افتراضي */
+        }
+        #qr-result {
+            margin-top: 15px;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        #certificateDetails {
+            background-color: #ecf0f1;
+            border: 1px solid #dcdde1;
+            border-radius: 8px;
+            padding: 25px;
+            text-align: right;
+        }
+        .certificate-info p {
+            margin: 10px 0;
+            color: #34495e;
+            font-size: 1.2em;
+            line-height: 1.6;
+        }
+        .certificate-info p strong {
+            color: #2980b9;
+        }
+        .message-box {
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 6px;
+            text-align: right;
+        }
+        .success-message {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        .error-message {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        .info-message {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+        /* Media Queries for responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            input[type="text"] {
+                width: 100%;
+                margin: 0 0 10px 0;
+            }
+            button {
+                width: 100%;
+                padding: 12px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <main class="container">
-    <header class="header">
-      <img src="https://res.cloudinary.com/dvqik0oco/image/upload/v1753625098/logo2-02_black_emfhdj.png" alt="Right Advisor" class="logo">
-      <h1>نظام التحقق من شهادات التدريب</h1>
-      <p class="subtitle">أدخل رقم الشهادة أو امسح QR للتحقق من صحة الشهادة الصادرة من Right Advisor</p>
-    </header>
+    <div class="container">
+        <div class="header">
+            <!-- شعار الشركة -->
+            <img src="https://res.cloudinary.com/dvqik0oco/image/upload/v1753625098/logo2-02_black_emfhdj.png" alt="Right Advisor Logo" class="logo">
+            <h1>التحقق من شهادة التدريب</h1>
+        </div>
 
-    <section class="search-panel">
-      <div class="input-row">
-        <input id="certInput" type="text" placeholder="أدخل رقم الشهادة (مثال: RA-2025-001)" />
-        <button id="searchBtn">تحقق</button>
-      </div>
+        <div class="section-box">
+            <h2>بحث يدوي برقم الشهادة</h2>
+            <div class="manual-search">
+                <input type="text" id="serialNumberInput" placeholder="أدخل رقم الشهادة">
+                <button id="verifyButton">تحقق</button>
+            </div>
+        </div>
 
-      <div class="qr-row">
-        <button id="toggleScanBtn">ابدأ مسح QR</button>
-        <button id="stopScanBtn" style="display:none">أوقف المسح</button>
-      </div>
+        <div class="section-box">
+            <h2>مسح QR Code بالكاميرا</h2>
+            <button id="toggleQrScanButton">بدء مسح QR Code</button>
+            <div id="reader" style="width: 100%;"></div>
+            <div id="qr-result" class="message-box info-message" style="display:none;"></div>
+        </div>
 
-      <div id="qr-reader" style="display:none; margin-top:12px;"></div>
-    </section>
+        <div class="section-box" id="resultContainer">
+            <h2>نتائج التحقق</h2>
+            <div id="certificateDetails">
+                <p>النتائج ستظهر هنا.</p>
+            </div>
+        </div>
+    </div>
 
-    <section id="result" class="result" aria-live="polite" style="display:none"></section>
+    <script>
+        // JavaScript لمعالجة منطق الصفحة
+        document.addEventListener('DOMContentLoaded', () => {
+            const serialNumberInput = document.getElementById('serialNumberInput');
+            const verifyButton = document.getElementById('verifyButton');
+            const toggleQrScanButton = document.getElementById('toggleQrScanButton');
+            const readerDiv = document.getElementById('reader');
+            const qrResultDiv = document.getElementById('qr-result');
+            const certificateDetailsDiv = document.getElementById('certificateDetails');
 
-    <footer class="footer">
-      <small>Right Advisor © <span id="year"></span> — للتواصل: rightadvisor.eg@gmail.com</small>
-    </footer>
-  </main>
+            let certificatesData = [];
+            let html5QrCode = null;
 
-  <script src="app.js"></script>
+            // دالة لعرض الرسائل في صندوق مخصص
+            function displayMessage(message, type) {
+                certificateDetailsDiv.innerHTML = `<div class="message-box ${type}-message">${message}</div>`;
+            }
+
+            // جلب بيانات الشهادات من ملف certificates.json
+            fetch('/certificates.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    certificatesData = data;
+                    console.log('Certificates loaded successfully.');
+                })
+                .catch(error => {
+                    console.error('Error fetching certificates:', error);
+                    displayMessage('حدث خطأ أثناء تحميل بيانات الشهادات. يرجى التأكد من وجود الملف.', 'error');
+                });
+
+            // دالة لعرض تفاصيل الشهادة
+            function displayCertificate(certificate) {
+                certificateDetailsDiv.innerHTML = `
+                    <div class="certificate-info">
+                        <p><strong>اسم المتدرب:</strong> ${certificate.traineeName}</p>
+                        <p><strong>الموضوع:</strong> ${certificate.topic}</p>
+                        <p><strong>تاريخ الإصدار:</strong> ${certificate.issueDate}</p>
+                        <p><strong>الجهة المانحة:</strong> Right Advisor</p>
+                        <p><strong>رقم الشهادة:</strong> ${certificate.serialNumber}</p>
+                    </div>
+                `;
+            }
+
+            // دالة البحث عن الشهادة برقمها
+            function searchCertificate(serialNumber) {
+                const foundCertificate = certificatesData.find(cert => cert.serialNumber === serialNumber);
+                if (foundCertificate) {
+                    displayCertificate(foundCertificate);
+                    return true;
+                } else {
+                    displayMessage('عذرًا، لم يتم العثور على شهادة بهذا الرقم. يرجى التأكد من الرقم والمحاولة مرة أخرى.', 'error');
+                    return false;
+                }
+            }
+
+            // معالج حدث للبحث اليدوي
+            verifyButton.addEventListener('click', () => {
+                const serialNumber = serialNumberInput.value.trim();
+                if (serialNumber) {
+                    searchCertificate(serialNumber);
+                } else {
+                    displayMessage('الرجاء إدخال رقم الشهادة للبحث.', 'info');
+                }
+            });
+
+            // معالج حدث لمسح الـ QR Code
+            toggleQrScanButton.addEventListener('click', () => {
+                if (html5QrCode && html5QrCode.isScanning) {
+                    // إيقاف الماسح إذا كان يعمل
+                    html5QrCode.stop().then(() => {
+                        console.log("QR Code scanning stopped.");
+                        readerDiv.style.display = 'none';
+                        qrResultDiv.style.display = 'none';
+                        toggleQrScanButton.textContent = 'بدء مسح QR Code';
+                        displayMessage('تم إيقاف الماسح الضوئي.', 'info');
+                    }).catch(err => {
+                        console.error("Error stopping QR Code scanner:", err);
+                    });
+                } else {
+                    // بدء الماسح
+                    readerDiv.style.display = 'block';
+                    qrResultDiv.style.display = 'block';
+                    toggleQrScanButton.textContent = 'إيقاف المسح';
+                    qrResultDiv.textContent = 'جارٍ تشغيل الكاميرا...';
+                    
+                    if (!html5QrCode) {
+                        html5QrCode = new Html5Qrcode("reader");
+                    }
+
+                    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+                    
+                    html5QrCode.start({ facingMode: "environment" }, config,
+                        (decodedText, decodedResult) => {
+                            // عند المسح بنجاح
+                            qrResultDiv.textContent = `تم مسح: ${decodedText}`;
+                            searchCertificate(decodedText);
+                            // إيقاف الماسح بعد نجاح العملية
+                            if (html5QrCode.isScanning) {
+                                html5QrCode.stop().then(() => {
+                                    readerDiv.style.display = 'none';
+                                    toggleQrScanButton.textContent = 'بدء مسح QR Code';
+                                }).catch(err => console.error("Error stopping scanner after scan:", err));
+                            }
+                        },
+                        (errorMessage) => {
+                            // noop - this is called continuously when no QR is found
+                        }
+                    ).catch((err) => {
+                        console.error(`Unable to start scanning: ${err}`);
+                        displayMessage('لا يمكن تشغيل الكاميرا. تأكد من إعطاء إذن الوصول للكاميرا أو أنها ليست قيد الاستخدام.', 'error');
+                        readerDiv.style.display = 'none';
+                        toggleQrScanButton.textContent = 'بدء مسح QR Code';
+                        qrResultDiv.style.display = 'none';
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>
