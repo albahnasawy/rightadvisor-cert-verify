@@ -3,44 +3,441 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>التحقق من الشهادة - Right Advisor</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <title>التحقق من صحة الشهادة - Right Advisor</title>
+    
+    <!-- Google Fonts for a modern Arabic font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Embedded CSS for styling -->
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            --secondary-color: #007bff;
+            --background-color: #f4f7f9;
+            --card-background: #ffffff;
+            --text-color: #333;
+            --light-gray: #e9ecef;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--card-background);
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            border-top: 5px solid var(--primary-color);
+            box-sizing: border-box;
+        }
+
+        header .logo {
+            max-width: 180px;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 0 0 10px;
+        }
+
+        header p {
+            color: #6c757d;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        #serial-input {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            font-size: 1rem;
+            font-family: var(--font-family);
+            transition: border-color 0.3s, box-shadow 0.3s;
+            text-align: right;
+        }
+
+        #serial-input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+
+        #search-btn, .qr-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            font-family: var(--font-family);
+        }
+
+        #search-btn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        #search-btn:hover {
+            background-color: #004494;
+            transform: translateY(-2px);
+        }
+
+        .qr-btn {
+            background-color: #6c757d;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .qr-btn:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        #qr-reader {
+            margin-top: 20px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        #qr-reader_dashboard_section_csr > div > button {
+             background-color: #6c757d !important;
+             color: white !important;
+             border: none !important;
+             margin-top: 10px !important;
+             padding: 8px 12px !important;
+             border-radius: 6px !important;
+             font-family: var(--font-family) !important;
+        }
+
+        .loader {
+            border: 5px solid var(--light-gray);
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 30px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-container {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 8px;
+            text-align: right;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-container.success {
+            background-color: #e9f7ef;
+            border: 1px solid #a3e9a4;
+        }
+
+        .result-container.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: var(--error-color);
+        }
+
+        .result-container p {
+            margin: 12px 0;
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+
+        .result-container p strong {
+            color: var(--primary-color);
+            min-width: 130px;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        .result-container .certificate-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--success-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .result-container .certificate-title svg {
+            color: var(--success-color);
+        }
+
+        .result-container .error-message {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        footer {
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <img src="https://res.cloudinary.com/dvqik0oco/image/upload/v1753625098/logo2-02_black_emfhdj.png" alt="Right Advisor Logo" class="logo">
-        <h1>التحقق من الشهادة</h1>
-    </header>
 
-    <main>
-        <section class="verification-section">
-            <h2>البحث اليدوي</h2>
-            <div class="input-group">
-                <input type="text" id="verificationCode" placeholder="أدخل رمز التحقق (Serial Number)">
-                <button id="verifyButton">تحقق</button>
+    <div class="container">
+        <header>
+            <img src="https://res.cloudinary.com/dvqik0oco/image/upload/v1753625098/logo2-02_black_emfhdj.png" alt="شعار Right Advisor" class="logo">
+            <h1>نظام التحقق من الشهادات</h1>
+            <p>أدخل الرقم التسلسلي للشهادة أو امسح رمز QR للتحقق من صحتها.</p>
+        </header>
+
+        <main>
+            <div class="search-box">
+                <input type="text" id="serial-input" placeholder="أدخل الرقم التسلسلي هنا..." aria-label="الرقم التسلسلي">
+                <button id="search-btn" aria-label="بحث">بحث</button>
             </div>
-        </section>
+            <button id="scan-qr-btn" class="qr-btn" aria-label="مسح رمز الاستجابة السريعة">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10"/></svg>
+                مسح QR Code
+            </button>
+            
+            <div id="qr-reader" style="display: none;"></div>
 
-        <section class="verification-section">
-            <h2>مسح QR Code</h2>
-            <button id="scanQrButton">مسح QR Code بالكاميرا</button>
-            <div id="qr-reader" style="width:100%;"></div>
-            <div id="qr-reader-results"></div>
-        </section>
+            <div id="loader" class="loader" style="display: none;"></div>
+            <div id="result-container" class="result-container" style="display: none;"></div>
+        </main>
 
-        <section class="results-section">
-            <h2>نتائج التحقق</h2>
-            <div id="certificateDetails">
-                <p>أدخل رمز التحقق أو امسح QR Code لعرض تفاصيل الشهادة.</p>
-            </div>
-        </section>
-    </main>
+        <footer>
+            <p>&copy; <span id="current-year"></span> Right Advisor. جميع الحقوق محفوظة.</p>
+        </footer>
+    </div>
 
-    <footer>
-        <p>&copy; 2025 Right Advisor. جميع الحقوق محفوظة.</p>
-    </footer>
+    <!-- QR Code Scanning Library -->
+    <script src="https://unpkg.com/html5-qrcode/html5-qrcode.min.js"></script>
+    
+    <!-- Embedded JavaScript Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // ===================================================================================
+            // !!! تعليمات هامة جداً !!!
+            // الرابط التالي تم استنتاجه من الرابط الذي أرسلته.
+            // لكي يعمل هذا الرابط، يجب أن تتأكد من أن إعدادات المشاركة في ملف Google Sheet هي
+            // "Anyon with the link" (أي شخص لديه الرابط يمكنه العرض).
+            // إذا استمرت المشكلة، قم بتوليد رابط "Publish to the web" جديد كما هو موضح في الشرح السابق.
+            // ===================================================================================
+            const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR0A1jAwgT_dBPxL8q6NeeXf4DSPLiRfZJdqRYShc1yy-EaEIhMMNjzAcNiHLdlLIppAR8GxNaHE19z/pub?output=csv';
 
-    <script src="script.js"></script>
+            let certificatesData = [];
+            const serialInput = document.getElementById('serial-input');
+            const searchBtn = document.getElementById('search-btn');
+            const scanQrBtn = document.getElementById('scan-qr-btn');
+            const resultContainer = document.getElementById('result-container');
+            const loader = document.getElementById('loader');
+            const qrReaderDiv = document.getElementById('qr-reader');
+            let html5QrCode = null;
+
+            // جلب البيانات من Google Sheet عند تحميل الصفحة
+            async function fetchData() {
+                loader.style.display = 'block';
+                resultContainer.style.display = 'none';
+                try {
+                    // استخدام 'no-cache' لضمان الحصول على أحدث نسخة من البيانات
+                    const response = await fetch(GOOGLE_SHEET_CSV_URL, { cache: 'no-cache' });
+                    if (!response.ok) {
+                        throw new Error(`فشل الاتصال بالشبكة: ${response.statusText}`);
+                    }
+                    const csvText = await response.text();
+                    // إزالة الاقتباسات المزدوجة الزائدة التي قد يضيفها Google
+                    const cleanedCsvText = csvText.substring(1, csvText.length - 1).replace(/","/g, ',').replace(/"\r\n"/g, '\r\n');
+                    certificatesData = parseCSV(cleanedCsvText);
+
+                    if (certificatesData.length === 0) {
+                        console.warn("تم تحميل البيانات ولكنها فارغة أو بصيغة غير صحيحة.");
+                    } else {
+                        console.log('تم تحميل بيانات الشهادات بنجاح:', certificatesData.length, 'شهادة');
+                    }
+                } catch (error) {
+                    console.error('فشل في تحميل بيانات الشهادات:', error);
+                    displayError('فشل تحميل البيانات. تأكد من أن ملف Google Sheet متاح للجميع (Published to the web) وأن الرابط صحيح.');
+                } finally {
+                    loader.style.display = 'none';
+                }
+            }
+
+            // تحليل نص CSV وتحويله إلى كائنات JavaScript
+            function parseCSV(text) {
+                const rows = text.split(/\r?\n/).filter(row => row.trim() !== '');
+                if (rows.length < 1) return [];
+                const headers = rows[0].split(',').map(header => header.trim());
+                const data = [];
+                for (let i = 1; i < rows.length; i++) {
+                    const values = rows[i].split(',').map(value => value.trim());
+                    if (values.length === headers.length) {
+                        const entry = {};
+                        headers.forEach((header, index) => {
+                            entry[header] = values[index];
+                        });
+                        data.push(entry);
+                    }
+                }
+                return data;
+            }
+
+            // عرض نتيجة البحث في الصفحة
+            function displayResult(certificate) {
+                stopScanner();
+                resultContainer.style.display = 'block';
+                
+                if (certificate) {
+                    resultContainer.className = 'result-container success';
+                    // تأكد من أن أسماء الأعمدة هنا تطابق تمامًا أسماء الأعمدة في ملف Google Sheet
+                    // على سبيل المثال: 'Trainee Name', 'Course Name', 'Issue Date', 'Serial Number'
+                    resultContainer.innerHTML = `
+                        <p class="certificate-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            شهادة معتمدة
+                        </p>
+                        <p><strong>اسم المتدرب:</strong> ${certificate['Trainee Name'] || 'غير متوفر'}</p>
+                        <p><strong>اسم الدورة:</strong> ${certificate['Course Name'] || 'غير متوفر'}</p>
+                        <p><strong>تاريخ الإصدار:</strong> ${certificate['Issue Date'] || 'غير متوفر'}</p>
+                        <p><strong>الرقم التسلسلي:</strong> ${certificate['Serial Number'] || 'غير متوفر'}</p>
+                    `;
+                } else {
+                    displayError(`الشهادة بالرقم التسلسلي "${serialInput.value}" غير موجودة أو غير صالحة.`);
+                }
+            }
+
+            // عرض رسالة خطأ مخصصة
+            function displayError(message) {
+                resultContainer.style.display = 'block';
+                resultContainer.className = 'result-container error';
+                resultContainer.innerHTML = `<p class="error-message">${message}</p>`;
+            }
+
+            // وظيفة البحث عن الشهادة
+            function searchCertificate() {
+                const serialNumber = serialInput.value.trim();
+                if (!serialNumber) {
+                    displayError('يرجى إدخال الرقم التسلسلي للشهادة.');
+                    return;
+                }
+
+                if (certificatesData.length === 0) {
+                    displayError('البيانات غير متاحة حالياً، يرجى المحاولة مرة أخرى بعد قليل.');
+                    fetchData(); // محاولة إعادة جلب البيانات
+                    return;
+                }
+
+                const found = certificatesData.find(cert => cert['Serial Number'] && cert['Serial Number'].toLowerCase() === serialNumber.toLowerCase());
+                displayResult(found);
+            }
+            
+            // إيقاف الماسح الضوئي للكاميرا
+            function stopScanner() {
+                if (html5QrCode && html5QrCode.isScanning) {
+                    html5QrCode.stop().then(() => {
+                        console.log("تم إيقاف ماسح QR.");
+                        qrReaderDiv.style.display = 'none';
+                        scanQrBtn.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10"/></svg>
+                            مسح QR Code`;
+                    }).catch(err => {
+                        console.error("فشل إيقاف الماسح: ", err);
+                    });
+                }
+            }
+
+            // وظيفة التنفيذ عند نجاح المسح
+            function onScanSuccess(decodedText, decodedResult) {
+                console.log(`تم العثور على كود: ${decodedText}`);
+                serialInput.value = decodedText;
+                stopScanner();
+                searchCertificate();
+            }
+
+            // وظيفة التنفيذ عند فشل المسح (يمكن تجاهلها)
+            function onScanFailure(error) {
+                // console.warn(`فشل المسح: ${error}`);
+            }
+
+            // ربط الأحداث بالأزرار والمدخلات
+            searchBtn.addEventListener('click', searchCertificate);
+            serialInput.addEventListener('keyup', (event) => {
+                if (event.key === 'Enter') {
+                    searchCertificate();
+                }
+            });
+
+            scanQrBtn.addEventListener('click', () => {
+                if (html5QrCode && html5QrCode.isScanning) {
+                    stopScanner();
+                } else {
+                    qrReaderDiv.style.display = 'block';
+                    resultContainer.style.display = 'none';
+                    scanQrBtn.textContent = 'إيقاف الكاميرا';
+                    
+                    html5QrCode = new Html5Qrcode("qr-reader");
+                    const config = { 
+                        fps: 10, 
+                        qrbox: { width: 250, height: 250 } 
+                    };
+                    
+                    html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure)
+                    .catch(err => {
+                        console.error("لا يمكن بدء ماسح QR", err);
+                        displayError("لا يمكن تشغيل الكاميرا. يرجى منح الإذن اللازم والمحاولة مرة أخرى.");
+                        stopScanner();
+                    });
+                }
+            });
+
+            // تحديث سنة الحقوق في الأسفل تلقائياً
+            document.getElementById('current-year').textContent = new Date().getFullYear();
+
+            // بدء تحميل البيانات عند فتح الصفحة
+            fetchData();
+        });
+    </script>
 </body>
 </html>
